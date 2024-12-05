@@ -12,6 +12,13 @@ has_word_in_direction :: proc(input: []string, word: string, pos, dir: [2]int) -
 	return has_word_in_direction(input, word[1:], pos + dir, dir)
 }
 
+has_x_mas_in_direction :: proc(input: []string, pos, mdir, wdir: [2]int) -> bool {
+	return(
+		has_word_in_direction(input, "MAS", pos, wdir + mdir) &&
+		has_word_in_direction(input, "MAS", pos + mdir * 2, wdir - mdir) \
+	)
+}
+
 
 main :: proc() {
 	data, ok := os.read_entire_file("day04/input")
@@ -28,29 +35,33 @@ main :: proc() {
 
 	directions := [][2]int {
 		{1, 0}, // right
-		{1, 1}, // right-down
+		//{1, 1}, // right-down
 		{0, 1}, // down
-		{-1, 1}, // left-down
+		//{-1, 1}, // left-down
 		{-1, 0}, // left
-		{-1, -1}, // left-up
+		//{-1, -1}, // left-up
 		{0, -1}, // up
-		{1, -1}, // right-up
+		//{1, -1}, // right-up
 	}
 
 	total_xmas := 0
 
 	for line, y in input {
 		for char, x in line {
-			if char != 'X' do continue
+			if char != 'M' do continue
 
 			pos := [2]int{x, y}
-			for dir in directions {
-				if has_word_in_direction(input, "XMAS", pos, dir) {
-					total_xmas += 1
+			for mdir in directions {
+				for dir in directions {
+					if mdir.x == dir.x || mdir.y == dir.y do continue // doesn't make sense to look at same axis
+
+					if has_x_mas_in_direction(input, pos, mdir, dir) {
+						total_xmas += 1
+					}
 				}
 			}
 		}
 	}
 
-	fmt.println(total_xmas)
+	fmt.println(total_xmas / 2)
 }
